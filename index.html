@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ben Mak – Luxury Voice Recording App</title>
+    <style>
+        /* Luxury Dark Mode Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #0d0d0d;
+            color: #f0f0f0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+        }
+
+        .name {
+            font-size: 5em;
+            font-weight: bold;
+            color: #e0e0e0;
+            letter-spacing: 5px;
+            position: relative;
+            background: linear-gradient(120deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s infinite linear;
+            overflow: hidden;
+        }
+
+        .name::before {
+            content: 'Ben Mak';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+            transform: translateX(-100%);
+            animation: shineEffect 2s infinite;
+        }
+
+        @keyframes shineEffect {
+            0% {
+                transform: translateX(-100%);
+            }
+            50% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes shine {
+            0% { background-position: -200%; }
+            100% { background-position: 200%; }
+        }
+
+        .description {
+            font-size: 1.5em;
+            margin-top: 20px;
+            color: #888;
+        }
+
+        .cta-button {
+            margin-top: 40px;
+            padding: 15px 30px;
+            background: #ff9500;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(255, 149, 0, 0.5);
+        }
+
+        .cta-button:hover {
+            background: #e08900;
+            box-shadow: 0 12px 40px rgba(255, 149, 0, 0.7);
+        }
+
+        .light-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0));
+            border-radius: 50%;
+            filter: blur(100px);
+            animation: pulse 5s infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="light-effect"></div>
+        <div class="name">Ben Mak</div>
+        <div class="description">Luxury Voice Recording App</div>
+        <button class="cta-button" onclick="location.href='benmak.html'">Enter the Experience</button>
+    </div>
+</body>
+</html>
