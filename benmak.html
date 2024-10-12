@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ben Mak Audio Sharing</title>
     <style>
-        /* Apple-inspired Design */
         body, html {
             margin: 0;
             padding: 0;
@@ -34,7 +33,6 @@
         .logo {
             font-size: 2em;
             font-weight: 600;
-            letter-spacing: 1px;
             color: #ff9500;
             text-shadow: 0 1px 3px rgba(255, 149, 0, 0.6);
         }
@@ -57,13 +55,6 @@
             position: relative;
             width: 90%;
             max-width: 600px;
-        }
-
-        .recording h3 {
-            font-size: 1.6em;
-            font-weight: 500;
-            color: #e8e8e8;
-            margin-bottom: 15px;
         }
 
         .record-button, .stop-button, .share-button {
@@ -99,7 +90,6 @@
             width: 100%;
             margin: 15px 0;
             border-radius: 10px;
-            overflow: hidden;
         }
 
         footer {
@@ -146,7 +136,7 @@
 
                     document.querySelector(".record-button").style.display = "none";
                     document.querySelector(".stop-button").style.display = "inline-block";
-                    startTranscribing("transcript123"); // Start transcribing
+                    startTranscribing("transcript123");
                 })
                 .catch(error => {
                     console.error("Recording failed:", error);
@@ -172,7 +162,6 @@
                 transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
             }, 2000);
 
-            // Stop transcribing after recording ends
             mediaRecorder.addEventListener("stop", () => {
                 clearInterval(intervalId);
             });
@@ -181,11 +170,13 @@
         function generateShareLink() {
             const audioElement = document.getElementById("recorded-audio");
             if (audioElement.src) {
-                navigator.clipboard.writeText(audioElement.src).then(() => {
-                    alert('Shareable link copied to clipboard: ' + audioElement.src);
-                }).catch(err => {
-                    console.error('Could not copy text: ', err);
-                });
+                navigator.clipboard.writeText(audioElement.src)
+                    .then(() => {
+                        alert(`Shareable link copied to clipboard: ${audioElement.src}`);
+                    })
+                    .catch(err => {
+                        console.error("Error copying text: ", err);
+                    });
             }
         }
     </script>
