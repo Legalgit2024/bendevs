@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebApp Studio Pro - Dark Mode</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2d2d2d;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .editor-container {
+            display: flex;
+            flex-grow: 1;
+        }
+        .code-editor, .preview {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .code-editor {
+            background-color: #252526;
+            color: #d4d4d4;
+        }
+        .preview {
+            background-color: #333333;
+            border-left: 1px solid #4d4d4d;
+        }
+        h1, h2 {
+            margin-top: 0;
+            color: #007aff;
+        }
+        button {
+            background-color: #007aff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        #fileList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #fileList li {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        #fileList li:hover {
+            background-color: #3a3a3a;
+        }
+        #apiKey, #modelSelect, #urlInput {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background-color: #3a3a3a;
+            border: 1px solid #4d4d4d;
+            color: #e0e0e0;
+            border-radius: 5px;
+        }
+        #codeEditor {
+            width: 100%;
+            height: 300px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #4d4d4d;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>WebApp Studio Pro</h2>
+            <button id="importBtn">Import HTML</button>
+            <input type="file" id="fileInput" style="display: none;" accept=".html">
+            <button id="downloadBtn">Download HTML</button>
+            <h3>Files</h3>
+            <ul id="fileList"></ul>
+            <h3>AI Assistant</h3>
+            <select id="modelSelect">
+                <option value="openai">OpenAI API</option>
+                <option value="openrouter">OpenRouter API</option>
+            </select>
+            <input type="text" id="apiKey" placeholder="Enter API Key">
+            <h3>URL to HTML</h3>
+            <input type="text" id="urlInput" placeholder="Enter URL">
+            <button id="convertUrlBtn">Convert to HTML</button>
+        </div>
+        <div class="main-content">
+            <div class="editor-container">
+                <div class="code-editor">
+                    <h2>Code Editor</h2>
+                    <textarea id="codeEditor" spellcheck="false"></textarea>
+                </div>
+                <div class="preview">
+                    <h2>Preview</h2>
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const importBtn = document.getElementById('importBtn');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const codeEditor = document.getElementById('codeEditor');
+        const previewContent = document.getElementById('previewContent');
+        const apiKeyInput = document.getElementById('apiKey');
+        const modelSelect = document.getElementById('modelSelect');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const urlInput = document.getElementById('urlInput');
+        const convertUrlBtn = document.getElementById('convertUrlBtn');
+
+        let files = [];
+
+        importBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    files.push({ name: file.name, content });
+                    updateFileList();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            files.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                li.addEventListener('click', () => loadFile(index));
+                fileList.appendChild(li);
+            });
+        }
+
+        function loadFile(index) {
+            const file = files[index];
+            codeEditor.value = file.content;
+            updatePreview();
+        }
+
+        codeEditor.addEventListener('input', updatePreview);
+
+        function updatePreview() {
+            const code = codeEditor.value;
+            previewContent.innerHTML = code;
+        }
+
+        async function getAIAssistance() {
+            const apiKey = apiKeyInput.value;
+            const model = modelSelect.value;
+            const prompt = `Improve the following HTML code:\n\n${codeEditor.value}`;
+
+            let endpoint, headers, body;
+
+            if (model === 'openai') {
+                endpoint = 'https://api.openai.com/v1/chat/completions';
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                };
+                body = JSON.stringify({
+                    model: 'gpt-3.5-turbo',
+                    messages: [{ role: 'user', content: prompt }]
+                });
+            } else {
+                endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                };
+                body = JSON.stringify({
+                    model: 'anthropic/claude-3-sonnet-20240229',
+                    messages: [{ role: 'user', content: prompt }]
+                });
+            }
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: headers,
+                    body: body
+                });
+
+                const data = await response.json();
+                const improvedCode = data.choices[0].message.content;
+                codeEditor.value = improvedCode;
+                updatePreview();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to get AI assistance. Please check your API key and try again.');
+            }
+        }
+
+        function downloadHTML() {
+            const content = codeEditor.value;
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'generated_app.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        async function convertUrlToHtml() {
+            const url = urlInput.value;
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+                codeEditor.value = html;
+                updatePreview();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to convert URL to HTML. Please check the URL and try again.');
+            }
+        }
+
+        // Add event listeners
+        const aiAssistBtn = document.createElement('button');
+        aiAssistBtn.textContent = 'Get AI Assistance';
+        aiAssistBtn.addEventListener('click', getAIAssistance);
+        document.querySelector('.sidebar').appendChild(aiAssistBtn);
+
+        downloadBtn.addEventListener('click', downloadHTML);
+        convertUrlBtn.addEventListener('click', convertUrlToHtml);
+    </script>
+</body>
+</html>
