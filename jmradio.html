@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JusticeMinds FM Podcast Player</title>
+    <title> Dear Raj Welcome to Justice Minds FM Podcast Radio Player</title>
     <style>
         body, html {
             margin: 0;
@@ -73,6 +73,16 @@
             height: 100%;
             z-index: 1;
         }
+        #share-link {
+            display: none;
+            margin-top: 10px;
+            padding: 5px;
+            background-color: #333;
+            border: 1px solid #555;
+            color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -84,15 +94,17 @@
             <div class="controls">
                 <label for="file-upload" class="upload-btn" id="upload-label">Upload Audio</label>
                 <input type="file" id="file-upload" accept="audio/*" onchange="handleFileUpload(event)">
-                <button onclick="shareAudio()">Share</button>
+                <button onclick="sharePodcastLink()">Share</button>
             </div>
             <audio id="audio-player" controls style="display: none;"></audio>
             <div class="upload-info" id="upload-info">Upload an audio file to begin</div>
+            <input type="text" id="share-link" readonly>
         </div>
     </div>
 
     <script>
         let audioFile;
+        let podcastId;
 
         function handleFileUpload(event) {
             audioFile = event.target.files[0];
@@ -105,24 +117,28 @@
                 uploadInfo.textContent = `Uploaded: ${audioFile.name} on ${new Date().toLocaleDateString()}`;
                 
                 document.getElementById('upload-label').style.display = 'none';
+
+                // Generate a unique ID for the podcast
+                podcastId = generateUniqueId();
             }
         }
 
-        function shareAudio() {
-            if (audioFile) {
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'JusticeMinds FM Podcast',
-                        text: 'Check out this podcast episode!',
-                        files: [audioFile]
-                    }).then(() => {
-                        console.log('Shared successfully');
-                    }).catch((error) => {
-                        console.error('Error sharing:', error);
-                    });
-                } else {
-                    alert('Web Share API is not supported in your browser. You can manually share the audio file.');
-                }
+        function generateUniqueId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function sharePodcastLink() {
+            if (podcastId) {
+                const shareLink = `${window.location.origin}/podcast/${podcastId}`;
+                const shareLinkInput = document.getElementById('share-link');
+                shareLinkInput.value = shareLink;
+                shareLinkInput.style.display = 'block';
+                
+                // Copy to clipboard
+                shareLinkInput.select();
+                document.execCommand('copy');
+                
+                alert('Podcast link copied to clipboard!');
             } else {
                 alert('Please upload an audio file first.');
             }
