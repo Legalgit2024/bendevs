@@ -3,93 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BenMak Audio Sharing</title>
+    <title>Ben Mak Audio Sharing</title>
     <style>
-        /* Dark Mode Styles Inspired by Apple */
+        /* Apple-inspired Design */
         body, html {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #121212;
-            color: #f0f0f0;
+            background-color: #000;
+            color: #f8f8f8;
             height: 100%;
             overflow-x: hidden;
         }
 
         .header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             padding: 20px;
-            background-color: #1f1f1f;
-            color: white;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #fff;
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
         .logo {
-            font-size: 1.8em;
-            font-weight: bold;
+            font-size: 2em;
+            font-weight: 600;
+            letter-spacing: 1px;
             color: #ff9500;
+            text-shadow: 0 1px 3px rgba(255, 149, 0, 0.6);
         }
 
         .content {
-            margin-top: 80px;
+            margin-top: 120px;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .recording {
-            background: #1e1e1e;
-            padding: 20px;
+            background: linear-gradient(145deg, #1e1e1e, #2b2b2b);
+            padding: 25px;
             margin: 20px 0;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
             text-align: center;
             position: relative;
+            width: 90%;
+            max-width: 600px;
         }
 
-        .recording input {
-            background: #2e2e2e;
-            border: none;
-            color: #f0f0f0;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            width: calc(100% - 40px);
+        .recording h3 {
+            font-size: 1.6em;
+            font-weight: 500;
+            color: #e8e8e8;
+            margin-bottom: 15px;
         }
 
-        .share-button {
+        .record-button, .stop-button, .share-button {
             background-color: #ff9500;
             color: #fff;
-            padding: 10px 20px;
+            padding: 12px 30px;
             border: none;
-            border-radius: 5px;
+            border-radius: 30px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 10px rgba(255, 149, 0, 0.5);
+        }
+
+        .record-button:hover, .stop-button:hover, .share-button:hover {
+            background-color: #ff7f00;
+        }
+
+        .transcript {
+            background: #222;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #b0b0b0;
+            text-align: left;
+        }
+
+        audio {
+            width: 100%;
+            margin: 15px 0;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         footer {
-            background: #141414;
-            color: #e0e0e0;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #b0b0b0;
+            padding: 30px;
             text-align: center;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+        }
+
+        footer a {
+            color: #ff9500;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
         }
     </style>
     <script>
-        function generateShareLink(recordingId) {
-            const nameInput = document.getElementById(`name-${recordingId}`);
-            const recordingName = nameInput.value.trim() || "Untitled Recording";
-            const shareUrl = `${window.location.origin}/voiceshare.html?id=${recordingId}&name=${encodeURIComponent(recordingName)}`;
-            
-            navigator.clipboard.writeText(shareUrl).then(() => {
-                alert('Shareable link copied to clipboard: ' + shareUrl);
-            }).catch(err => {
-                console.error('Could not copy text: ', err);
+        let mediaRecorder;
+        let audioChunks = [];
+
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.start();
+
+                    mediaRecorder.addEventListener("dataavailable", event => {
+                        audioChunks.push(event.data);
+                    });
+
+                    mediaRecorder.addEventListener("stop", () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const audioElement = document.getElementById("recorded-audio");
+                        audioElement.src = audioUrl;
+                        audioElement.style.display = "block";
+                        audioChunks = [];
+                        document.querySelector(".share-button").style.display = "inline-block";
+                    });
+
+                    document.querySelector(".record-button").style.display = "none";
+                    document.querySelector(".stop-button").style.display = "inline-block";
+                    startTranscribing("transcript123"); // Start transcribing
+                })
+                .catch(error => {
+                    console.error("Recording failed:", error);
+                });
+        }
+
+        function stopRecording() {
+            if (mediaRecorder) {
+                mediaRecorder.stop();
+            }
+            document.querySelector(".record-button").style.display = "inline-block";
+            document.querySelector(".stop-button").style.display = "none";
+        }
+
+        function startTranscribing(transcriptId) {
+            const transcriptDiv = document.getElementById(transcriptId);
+            const intervalId = setInterval(() => {
+                const timestamp = new Date().toISOString().substr(11, 8);
+                const simulatedText = `Transcript at ${timestamp}: This is a sample transcription text.`;
+                const newParagraph = document.createElement("p");
+                newParagraph.textContent = simulatedText;
+                transcriptDiv.appendChild(newParagraph);
+                transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+            }, 2000);
+
+            // Stop transcribing after recording ends
+            mediaRecorder.addEventListener("stop", () => {
+                clearInterval(intervalId);
             });
+        }
+
+        function generateShareLink() {
+            const audioElement = document.getElementById("recorded-audio");
+            if (audioElement.src) {
+                navigator.clipboard.writeText(audioElement.src).then(() => {
+                    alert('Shareable link copied to clipboard: ' + audioElement.src);
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+            }
         }
     </script>
 </head>
@@ -100,27 +197,19 @@
 
     <div class="content">
         <div class="recording" id="recording123">
-            <h3>Voice Recording 1</h3>
-            <audio controls>
-                <source src="recordings/recording123.mp3" type="audio/mpeg">
+            <h3>Voice Recording</h3>
+            <button class="record-button" onclick="startRecording()">Start Recording</button>
+            <button class="stop-button" onclick="stopRecording()" style="display: none;">Stop Recording</button>
+            <button class="share-button" onclick="generateShareLink()" style="display: none;">Share</button>
+            <audio id="recorded-audio" controls style="display: none;">
                 Your browser does not support the audio element.
             </audio>
-            <input type="text" id="name-recording123" placeholder="Enter recording name">
-            <button class="share-button" onclick="generateShareLink('recording123')">Share</button>
-        </div>
-        <div class="recording" id="recording456">
-            <h3>Voice Recording 2</h3>
-            <audio controls>
-                <source src="recordings/recording456.mp3" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-            <input type="text" id="name-recording456" placeholder="Enter recording name">
-            <button class="share-button" onclick="generateShareLink('recording456')">Share</button>
+            <div class="transcript" id="transcript123"></div>
         </div>
     </div>
 
     <footer>
-        <p>© 2024 BenMak Tools. All Rights Reserved.</p>
+        <p>© 2024 Ben Mak Tools. All Rights Reserved.</p>
         <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
     </footer>
 </body>
