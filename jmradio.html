@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Dear Raj Welcome to Justice Minds FM Podcast Radio Player</title>
+    <title> Hello Raj Welcome to JusticeMinds FM Podcast Player</title>
     <style>
         body, html {
             margin: 0;
@@ -26,7 +26,7 @@
             background-color: rgba(44, 44, 44, 0.8);
             border-radius: 10px;
             width: 90%;
-            max-width: 300px;
+            max-width: 400px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -83,6 +83,30 @@
             width: 100%;
             box-sizing: border-box;
         }
+        #timestamp-input {
+            width: 70%;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        #add-timestamp {
+            width: 25%;
+        }
+        #timestamps {
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .timestamp-item {
+            background-color: rgba(66, 133, 244, 0.3);
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .timestamp-item button {
+            float: right;
+            padding: 2px 5px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -99,12 +123,18 @@
             <audio id="audio-player" controls style="display: none;"></audio>
             <div class="upload-info" id="upload-info">Upload an audio file to begin</div>
             <input type="text" id="share-link" readonly>
+            <div id="timestamp-controls" style="display: none; margin-top: 15px;">
+                <input type="text" id="timestamp-input" placeholder="Add a comment...">
+                <button id="add-timestamp" onclick="addTimestamp()">Add</button>
+            </div>
+            <div id="timestamps"></div>
         </div>
     </div>
 
     <script>
         let audioFile;
         let podcastId;
+        let timestamps = [];
 
         function handleFileUpload(event) {
             audioFile = event.target.files[0];
@@ -117,8 +147,8 @@
                 uploadInfo.textContent = `Uploaded: ${audioFile.name} on ${new Date().toLocaleDateString()}`;
                 
                 document.getElementById('upload-label').style.display = 'none';
+                document.getElementById('timestamp-controls').style.display = 'block';
 
-                // Generate a unique ID for the podcast
                 podcastId = generateUniqueId();
             }
         }
@@ -129,12 +159,11 @@
 
         function sharePodcastLink() {
             if (podcastId) {
-                const shareLink = `${window.location.origin}/podcast/${podcastId}`;
+                const shareLink = `${window.location.origin}/podcast.html?id=${podcastId}`;
                 const shareLinkInput = document.getElementById('share-link');
                 shareLinkInput.value = shareLink;
                 shareLinkInput.style.display = 'block';
                 
-                // Copy to clipboard
                 shareLinkInput.select();
                 document.execCommand('copy');
                 
@@ -144,6 +173,50 @@
             }
         }
 
+        function addTimestamp() {
+            const audioPlayer = document.getElementById('audio-player');
+            const comment = document.getElementById('timestamp-input').value;
+            const time = audioPlayer.currentTime;
+
+            if (comment) {
+                timestamps.push({ time, comment });
+                updateTimestamps();
+                document.getElementById('timestamp-input').value = '';
+            }
+        }
+
+        function updateTimestamps() {
+            const timestampsDiv = document.getElementById('timestamps');
+            timestampsDiv.innerHTML = '';
+            timestamps.forEach((ts, index) => {
+                const tsElement = document.createElement('div');
+                tsElement.className = 'timestamp-item';
+                tsElement.innerHTML = `
+                    <span onclick="seekTo(${ts.time})">${formatTime(ts.time)}: ${ts.comment}</span>
+                    <button onclick="removeTimestamp(${index})">Remove</button>
+                `;
+                timestampsDiv.appendChild(tsElement);
+            });
+        }
+
+        function formatTime(time) {
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function seekTo(time) {
+            const audioPlayer = document.getElementById('audio-player');
+            audioPlayer.currentTime = time;
+            audioPlayer.play();
+        }
+
+        function removeTimestamp(index) {
+            timestamps.splice(index, 1);
+            updateTimestamps();
+        }
+
+        // Background animation code (unchanged)
         const canvas = document.getElementById('background-animation');
         const ctx = canvas.getContext('2d');
 
