@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editable Page</title>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #card-container.horizontal {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        #card-container.vertical-loop {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-auto-rows: minmax(100px, auto);
+            gap: 10px;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 10px;
+            width: 200px;
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+
+        .edit-button {
+            margin-top: 10px;
+        }
+
+        #add-card {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="card-container" class="horizontal">
+        <!-- Sample card structure -->
+        <div class="card" contenteditable="true">
+            <img src="default.jpg" alt="Card Image">
+            <p>Card description here</p>
+            <button class="edit-button">Edit Card</button>
+        </div>
+        <!-- Add more cards dynamically here -->
+    </div>
+    <button id="add-card">Add Card</button>
+    <input type="file" id="upload-image" style="display: none;" accept="image/*, video/*">
+
+    <script>
+        // JavaScript Functionality
+        document.addEventListener("DOMContentLoaded", () => {
+            const cardContainer = document.getElementById('card-container');
+            const addCardButton = document.getElementById('add-card');
+            const uploadInput = document.getElementById('upload-image');
+
+            let cardCount = 0;
+
+            // Function to create a new card
+            function createCard() {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.setAttribute('contenteditable', 'true');
+                
+                const img = document.createElement('img');
+                img.src = 'default.jpg';
+                img.alt = 'Card Image';
+
+                const desc = document.createElement('p');
+                desc.textContent = 'Card description here';
+
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit Card';
+                editButton.classList.add('edit-button');
+                editButton.addEventListener('click', () => editCard(img));
+
+                card.appendChild(img);
+                card.appendChild(desc);
+                card.appendChild(editButton);
+                cardContainer.appendChild(card);
+
+                cardCount++;
+                updateCardContainerLayout();
+            }
+
+            // Function to edit the card
+            function editCard(imgElement) {
+                uploadInput.click();
+                uploadInput.onchange = () => {
+                    const file = uploadInput.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            imgElement.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+            }
+
+            // Function to manage layout changes
+            function updateCardContainerLayout() {
+                if (cardCount > 5) {
+                    cardContainer.classList.remove('horizontal');
+                    cardContainer.classList.add('vertical-loop');
+                } else {
+                    cardContainer.classList.remove('vertical-loop');
+                    cardContainer.classList.add('horizontal');
+                }
+            }
+
+            // Event listeners
+            addCardButton.addEventListener('click', createCard);
+        });
+    </script>
+</body>
+</html>
