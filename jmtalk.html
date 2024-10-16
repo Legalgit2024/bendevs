@@ -67,9 +67,9 @@
             margin-top: 10px;
         }
         .share-button, .toggle-button {
-            background-color: #1c1c1e;
+            background-color: #444;
             color: #fff;
-            border: 1px solid #fff;
+            border: none;
             padding: 10px 20px;
             border-radius: 20px;
             font-size: 14px;
@@ -78,30 +78,42 @@
             transition: background-color 0.3s, color 0.3s;
         }
         .share-button:hover, .toggle-button:hover {
-            background-color: #fff;
-            color: #000;
-        }
-        .highlight {
-            background-color: yellow;
-            color: black;
+            background-color: #ff9900;
+            color: #fff;
         }
         .upload-box {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 300px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
             display: none;
-            margin-top: 20px;
+            transition: transform 0.3s;
         }
         #upload-box.active {
             display: block;
+            transform: scale(1);
         }
         #upload-box textarea {
             width: 100%;
             height: 150px;
             margin-bottom: 10px;
+            background-color: #222;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
         }
-        #upload-box input[type="file"] {
+        #upload-box input {
+            width: 100%;
+            padding: 10px;
             margin-bottom: 10px;
-        }
-        #snippet-list {
-            margin-top: 20px;
+            background-color: #222;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
         }
         .snippet-item {
             background-color: #1c1c1e;
@@ -151,143 +163,48 @@
             <input type="text" id="snippet-title" placeholder="Enter snippet title">
             <input type="text" id="snippet-tags" placeholder="Enter tags (comma-separated)">
             <button id="parse-btn">Parse and Render</button>
-            <button id="save-btn">Save Snippet</button>
-            <button id="load-btn">Load Snippets</button>
         </div>
-
-        <!-- Snippet List -->
-        <div id="snippet-list"></div>
     </div>
 
     <script>
         const toggleButton = document.getElementById('toggle-view');
         const cardsContainer = document.getElementById('cards-container');
-        const videoPlayer = document.getElementById('video-player');
-        const transcript = document.getElementById('transcript');
         const uploadButton = document.getElementById('upload-btn');
         const uploadBox = document.getElementById('upload-box');
-        const textArea = document.getElementById('text-area');
         const parseButton = document.getElementById('parse-btn');
-        const fileInput = document.getElementById('file-input');
-        const saveButton = document.getElementById('save-btn');
-        const loadButton = document.getElementById('load-btn');
-        const snippetTitle = document.getElementById('snippet-title');
-        const snippetTags = document.getElementById('snippet-tags');
-        const snippetList = document.getElementById('snippet-list');
+        const textArea = document.getElementById('text-area');
 
+        // Toggle view between grid and single column
         toggleButton.addEventListener('click', () => {
             cardsContainer.classList.toggle('single-column');
         });
 
-        function highlightText(text, startTime, endTime) {
-            const words = text.split(' ');
-            const totalDuration = endTime - startTime;
-            const wordDuration = totalDuration / words.length;
-
-            words.forEach((word, index) => {
-                setTimeout(() => {
-                    transcript.innerHTML = words.map((w, i) => 
-                        i === index ? `<span class="highlight">${w}</span>` : w
-                    ).join(' ');
-                }, index * wordDuration * 1000);
-            });
-        }
-
-        videoPlayer.addEventListener('timeupdate', () => {
-            const currentTime = videoPlayer.currentTime;
-            if (currentTime >= 35.28 && currentTime <= 36.39) {
-                highlightText(transcript.textContent, 35.28, 36.39);
-            } else if (currentTime >= 36.39 && currentTime <= 38.38) {
-                highlightText(transcript.textContent, 36.39, 38.38);
-            }
-        });
-
-        let shiftKeyPressed = false;
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Shift') shiftKeyPressed = true;
-        });
-
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'Shift') shiftKeyPressed = false;
-        });
-
+        // Handle double-click to reveal the upload box
+        let clickCount = 0;
         uploadButton.addEventListener('click', () => {
-            if (shiftKeyPressed) {
+            clickCount++;
+            if (clickCount === 2) {
                 uploadBox.classList.toggle('active');
+                clickCount = 0;
             }
+            setTimeout(() => {
+                clickCount = 0; // Reset after 500ms to prevent accidental toggling
+            }, 500);
         });
 
+        // Parse and render uploaded HTML/Text
         parseButton.addEventListener('click', () => {
             const inputText = textArea.value;
             const parser = new DOMParser();
             const parsedDoc = parser.parseFromString(inputText, 'text/html');
-            document.body.appendChild(parsedDoc.body);
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-                textArea.value = event.target.result;
-            };
-
-            if (file) {
-                reader.readAsText(file);
-            }
-        });
-
-        saveButton.addEventListener('click', () => {
-            const title = snippetTitle.value;
-            const tags = snippetTags.value.split(',').map(tag => tag.trim());
-            const content = textArea.value;
-
-            if (!title || !content) {
-                alert('Please enter a title and content for the snippet.');
-                return;
-            }
-
-            const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
-            snippets.push({ title, tags, content });
-            localStorage.setItem('snippets', JSON.stringify(snippets));
-
-            alert('Snippet saved successfully!');
-            snippetTitle.value = '';
-            snippetTags.value = '';
-            textArea.value = '';
-        });
-
-        loadButton.addEventListener('click', () => {
-            const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
-            snippetList.innerHTML = '';
-
-            snippets.forEach((snippet, index) => {
-                const snippetElement = document.createElement('div');
-                snippetElement.classList.add('snippet-item');
-                snippetElement.innerHTML = `
-                    <div class="snippet-title">${snippet.title}</div>
-                    <div class="snippet-tags">${snippet.tags.join(', ')}</div>
-                    <button onclick="loadSnippet(${index})">Load</button>
-                    <button onclick="deleteSnippet(${index})">Delete</button>
-                `;
-                snippetList.appendChild(snippetElement);
+            const elements = parsedDoc.body.children;
+            Array.from(elements).forEach(el => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = el.outerHTML;
+                cardsContainer.appendChild(card);
             });
         });
-
-        function loadSnippet(index) {
-            const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
-            const snippet = snippets[index];
-            textArea.value = snippet.content;
-            snippetTitle.value = snippet.title;
-            snippetTags.value = snippet.tags.join(', ');
-        }
-
-        function deleteSnippet(index) {
-            const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
-            snippets.splice(index, 1);
-            localStorage.setItem('snippets', JSON.stringify(snippets));
-            loadButton.click();
-        }
     </script>
 </body>
-</htmll
+</html>
