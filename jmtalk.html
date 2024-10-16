@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Communication Insights</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .cards-container.single-column {
+            grid-template-columns: 1fr;
+        }
+        .card {
+            background-color: #1c1c1e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            margin-bottom: 20px;
+        }
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .topic {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .description {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #8e8e93;
+        }
+        .timestamp {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-top: 10px;
+        }
+        .share-button, .toggle-button {
+            background-color: #1c1c1e;
+            color: #fff;
+            border: 1px solid #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .share-button:hover, .toggle-button:hover {
+            background-color: #fff;
+            color: #000;
+        }
+        .highlight {
+            background-color: yellow;
+            color: black;
+        }
+        .upload-box {
+            display: none;
+            margin-top: 20px;
+        }
+        #upload-box.active {
+            display: block;
+        }
+        #upload-box textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+        }
+        #upload-box input[type="file"] {
+            margin-bottom: 10px;
+        }
+        #snippet-list {
+            margin-top: 20px;
+        }
+        .snippet-item {
+            background-color: #1c1c1e;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .snippet-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .snippet-tags {
+            font-style: italic;
+            color: #8e8e93;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="toggle-view" class="toggle-button">Toggle View</button>
+        <button id="upload-btn" class="toggle-button">Upload HTML/Text</button>
+        <div id="cards-container" class="cards-container">
+            <div class="card">
+                <div class="title">
+                    <span>#23</span> WHY COMMUNICATION IS KEY TO BUSINESS SUCCESS!
+                </div>
+                <div class="video-container">
+                    <video controls id="video-player">
+                        <source src="https://path-to-your-video.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <button class="share-button">Share</button>
+                <div class="topic">MAIN TOPIC</div>
+                <div class="description" id="transcript">THE VIDEO DISCUSSES LEADERSHIP, ETHICS, AND HUMAN DECENCY IN BUSINESS THROUGH PERSONAL REFLECTIONS AND CONVERSATIONS.</div>
+                <div class="timestamp">[35:28-36:39]</div>
+                <div class="description">Speaker discusses the importance of communication and likability in leadership roles.</div>
+                <div class="timestamp">[36:39-38:38]</div>
+                <div class="description">Speaker reflects on personal loss and the impact of relationships on ethics and family.</div>
+            </div>
+        </div>
+
+        <!-- Upload Box for HTML/Text -->
+        <div id="upload-box" class="upload-box">
+            <textarea id="text-area" placeholder="Paste your HTML or text here..."></textarea>
+            <input type="file" id="file-input">
+            <input type="text" id="snippet-title" placeholder="Enter snippet title">
+            <input type="text" id="snippet-tags" placeholder="Enter tags (comma-separated)">
+            <button id="parse-btn">Parse and Render</button>
+            <button id="save-btn">Save Snippet</button>
+            <button id="load-btn">Load Snippets</button>
+        </div>
+
+        <!-- Snippet List -->
+        <div id="snippet-list"></div>
+    </div>
+
+    <script>
+        const toggleButton = document.getElementById('toggle-view');
+        const cardsContainer = document.getElementById('cards-container');
+        const videoPlayer = document.getElementById('video-player');
+        const transcript = document.getElementById('transcript');
+        const uploadButton = document.getElementById('upload-btn');
+        const uploadBox = document.getElementById('upload-box');
+        const textArea = document.getElementById('text-area');
+        const parseButton = document.getElementById('parse-btn');
+        const fileInput = document.getElementById('file-input');
+        const saveButton = document.getElementById('save-btn');
+        const loadButton = document.getElementById('load-btn');
+        const snippetTitle = document.getElementById('snippet-title');
+        const snippetTags = document.getElementById('snippet-tags');
+        const snippetList = document.getElementById('snippet-list');
+
+        toggleButton.addEventListener('click', () => {
+            cardsContainer.classList.toggle('single-column');
+        });
+
+        function highlightText(text, startTime, endTime) {
+            const words = text.split(' ');
+            const totalDuration = endTime - startTime;
+            const wordDuration = totalDuration / words.length;
+
+            words.forEach((word, index) => {
+                setTimeout(() => {
+                    transcript.innerHTML = words.map((w, i) => 
+                        i === index ? `<span class="highlight">${w}</span>` : w
+                    ).join(' ');
+                }, index * wordDuration * 1000);
+            });
+        }
+
+        videoPlayer.addEventListener('timeupdate', () => {
+            const currentTime = videoPlayer.currentTime;
+            if (currentTime >= 35.28 && currentTime <= 36.39) {
+                highlightText(transcript.textContent, 35.28, 36.39);
+            } else if (currentTime >= 36.39 && currentTime <= 38.38) {
+                highlightText(transcript.textContent, 36.39, 38.38);
+            }
+        });
+
+        let shiftKeyPressed = false;
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Shift') shiftKeyPressed = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Shift') shiftKeyPressed = false;
+        });
+
+        uploadButton.addEventListener('click', () => {
+            if (shiftKeyPressed) {
+                uploadBox.classList.toggle('active');
+            }
+        });
+
+        parseButton.addEventListener('click', () => {
+            const inputText = textArea.value;
+            const parser = new DOMParser();
+            const parsedDoc = parser.parseFromString(inputText, 'text/html');
+            document.body.appendChild(parsedDoc.body);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                textArea.value = event.target.result;
+            };
+
+            if (file) {
+                reader.readAsText(file);
+            }
+        });
+
+        saveButton.addEventListener('click', () => {
+            const title = snippetTitle.value;
+            const tags = snippetTags.value.split(',').map(tag => tag.trim());
+            const content = textArea.value;
+
+            if (!title || !content) {
+                alert('Please enter a title and content for the snippet.');
+                return;
+            }
+
+            const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
+            snippets.push({ title, tags, content });
+            localStorage.setItem('snippets', JSON.stringify(snippets));
+
+            alert('Snippet saved successfully!');
+            snippetTitle.value = '';
+            snippetTags.value = '';
+            textArea.value = '';
+        });
+
+        loadButton.addEventListener('click', () => {
+            const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
+            snippetList.innerHTML = '';
+
+            snippets.forEach((snippet, index) => {
+                const snippetElement = document.createElement('div');
+                snippetElement.classList.add('snippet-item');
+                snippetElement.innerHTML = `
+                    <div class="snippet-title">${snippet.title}</div>
+                    <div class="snippet-tags">${snippet.tags.join(', ')}</div>
+                    <button onclick="loadSnippet(${index})">Load</button>
+                    <button onclick="deleteSnippet(${index})">Delete</button>
+                `;
+                snippetList.appendChild(snippetElement);
+            });
+        });
+
+        function loadSnippet(index) {
+            const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
+            const snippet = snippets[index];
+            textArea.value = snippet.content;
+            snippetTitle.value = snippet.title;
+            snippetTags.value = snippet.tags.join(', ');
+        }
+
+        function deleteSnippet(index) {
+            const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
+            snippets.splice(index, 1);
+            localStorage.setItem('snippets', JSON.stringify(snippets));
+            loadButton.click();
+        }
+    </script>
+</body>
+</htmll
