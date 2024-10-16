@@ -67,9 +67,9 @@
             margin-top: 10px;
         }
         .share-button, .toggle-button {
-            background-color: #444;
+            background-color: #1c1c1e;
             color: #fff;
-            border: none;
+            border: 1px solid #fff;
             padding: 10px 20px;
             border-radius: 20px;
             font-size: 14px;
@@ -78,71 +78,27 @@
             transition: background-color 0.3s, color 0.3s;
         }
         .share-button:hover, .toggle-button:hover {
-            background-color: #ff9900;
-            color: #fff;
+            background-color: #fff;
+            color: #000;
         }
-        .upload-box {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            width: 300px;
-            background-color: #333;
-            padding: 10px;
-            border-radius: 10px;
-            display: none;
-            transition: transform 0.3s;
-        }
-        #upload-box.active {
-            display: block;
-            transform: scale(1);
-        }
-        #upload-box textarea {
-            width: 100%;
-            height: 150px;
-            margin-bottom: 10px;
-            background-color: #222;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        #upload-box input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #222;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-        }
-        .snippet-item {
-            background-color: #1c1c1e;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .snippet-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .snippet-tags {
-            font-style: italic;
-            color: #8e8e93;
+        .highlight {
+            background-color: yellow;
+            color: black;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <button id="toggle-view" class="toggle-button">Toggle View</button>
-        <button id="upload-btn" class="toggle-button">Upload HTML/Text</button>
         <div id="cards-container" class="cards-container">
             <div class="card">
                 <div class="title">
-                    <span>#23</span> WHY COMMUNICATION IS KEY TO BUSINESS SUCCESS!
+                    <span class="font-sans text-muted-foreground font-semibold text-3xl CU2efba5" id="23">#23</span>
+                    <span class="text-3xl font-semibold text-foreground">WHY COMMUNICATION IS KEY TO BUSINESS SUCCESS!</span>
                 </div>
                 <div class="video-container">
                     <video controls id="video-player">
-                        <source src="https://path-to-your-video.mp4" type="video/mp4">
+                        <source src="https://secure-res.craft.do/v2/3NdahmXsDA1dLjSZb8kxzJfPFtvZgtcgt5H2mpJi1xXdvX1ydztmbcd1ngaQ3JZTb7nyngjtnqgiKQs18oVZBUT3FvWHHMgy2YxRTu9brUkbKDieqyKjiuiA3zCBQAqF1hfjhEP5yAsnYFxxanvAvVmkUUMQU2tRKnBTXaap5QaoP7TD6C8fzkJXnU3FdtQb8p7ZjhFZcjXmVw2TgHGNLfMFbNwrCFqmTWUa8wYDvQGWTobEsDgcMs6UdXt44ShqExCuzDz6U4iKxAFY92jWpQLz2qGraGuEoA2nPoUCbfr9WgnXiEcknwGvaiFv4N4YznTqDg5ppYA3CdJbYBKi94hX8pKEQptQG25t58RWj6pMCANvygUx/Navigating%20Family%20Ties_%20A%20Heartfelt%20Conversation%20.mp4" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                 </div>
@@ -150,60 +106,45 @@
                 <div class="topic">MAIN TOPIC</div>
                 <div class="description" id="transcript">THE VIDEO DISCUSSES LEADERSHIP, ETHICS, AND HUMAN DECENCY IN BUSINESS THROUGH PERSONAL REFLECTIONS AND CONVERSATIONS.</div>
                 <div class="timestamp">[35:28-36:39]</div>
-                <div class="description">Speaker discusses the importance of communication and likability in leadership roles.</div>
+                <div class="description">Speaker discusses the importance of communication and likability in leadership roles. You're going to be dealing with management, staff and stakeholders. People don't buy products, they buy people. If you're going to be the front of your father's business, you have to be likeable, you have to be able to communicate, and you need to be able to negotiate.</div>
                 <div class="timestamp">[36:39-38:38]</div>
-                <div class="description">Speaker reflects on personal loss and the impact of relationships on ethics and family.</div>
+                <div class="description">Speaker reflects on personal loss and the impact of relationships on ethics and family. Very regretful. And you know that happened to me, don't you? And I've literally just went missing off the face of the earth. So it does remind me of another loss. There is a grieving period for this friend slash mentee slash business partner that just vanished. for no real clear reason and then after a really good healthy chat with you and your sister remained silent and didn't check in or even bother to text after that really good meet and it's the week</div>
             </div>
-        </div>
-
-        <!-- Upload Box for HTML/Text -->
-        <div id="upload-box" class="upload-box">
-            <textarea id="text-area" placeholder="Paste your HTML or text here..."></textarea>
-            <input type="file" id="file-input">
-            <input type="text" id="snippet-title" placeholder="Enter snippet title">
-            <input type="text" id="snippet-tags" placeholder="Enter tags (comma-separated)">
-            <button id="parse-btn">Parse and Render</button>
+            <!-- Add more cards here with the same structure -->
         </div>
     </div>
 
     <script>
         const toggleButton = document.getElementById('toggle-view');
         const cardsContainer = document.getElementById('cards-container');
-        const uploadButton = document.getElementById('upload-btn');
-        const uploadBox = document.getElementById('upload-box');
-        const parseButton = document.getElementById('parse-btn');
-        const textArea = document.getElementById('text-area');
+        const videoPlayer = document.getElementById('video-player');
+        const transcript = document.getElementById('transcript');
 
-        // Toggle view between grid and single column
         toggleButton.addEventListener('click', () => {
             cardsContainer.classList.toggle('single-column');
         });
 
-        // Handle double-click to reveal the upload box
-        let clickCount = 0;
-        uploadButton.addEventListener('click', () => {
-            clickCount++;
-            if (clickCount === 2) {
-                uploadBox.classList.toggle('active');
-                clickCount = 0;
-            }
-            setTimeout(() => {
-                clickCount = 0; // Reset after 500ms to prevent accidental toggling
-            }, 500);
-        });
+        function highlightText(text, startTime, endTime) {
+            const words = text.split(' ');
+            const totalDuration = endTime - startTime;
+            const wordDuration = totalDuration / words.length;
 
-        // Parse and render uploaded HTML/Text
-        parseButton.addEventListener('click', () => {
-            const inputText = textArea.value;
-            const parser = new DOMParser();
-            const parsedDoc = parser.parseFromString(inputText, 'text/html');
-            const elements = parsedDoc.body.children;
-            Array.from(elements).forEach(el => {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.innerHTML = el.outerHTML;
-                cardsContainer.appendChild(card);
+            words.forEach((word, index) => {
+                setTimeout(() => {
+                    transcript.innerHTML = words.map((w, i) => 
+                        i === index ? `<span class="highlight">${w}</span>` : w
+                    ).join(' ');
+                }, index * wordDuration * 1000);
             });
+        }
+
+        videoPlayer.addEventListener('timeupdate', () => {
+            const currentTime = videoPlayer.currentTime;
+            if (currentTime >= 35.28 && currentTime <= 36.39) {
+                highlightText(transcript.textContent, 35.28, 36.39);
+            } else if (currentTime >= 36.39 && currentTime <= 38.38) {
+                highlightText(transcript.textContent, 36.39, 38.38);
+            }
         });
     </script>
 </body>
