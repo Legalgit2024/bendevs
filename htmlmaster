@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lux AI HTML Editor</title>
+    <style>
+        /* Dark Mode Aesthetic and Styling */
+        :root {
+            --bg-color: #1c1c1e;
+            --text-color: #ffffff;
+            --accent-color: #a35cff;
+            --secondary-bg: #2c2c2e;
+        }
+
+        body, html {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Layout and Sidebar */
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--secondary-bg);
+            padding: 20px;
+            border-right: 1px solid var(--accent-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            display: flex;
+            flex-grow: 1;
+            margin-left: 250px;
+            height: 100%;
+        }
+
+        .editor-container, .preview-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+        }
+
+        .divider {
+            width: 5px;
+            background-color: var(--accent-color);
+            cursor: ew-resize;
+        }
+
+        /* Buttons and Textarea Styling */
+        textarea {
+            width: 100%;
+            height: calc(100% - 50px);
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            resize: none;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #fileList .file-item {
+            background-color: var(--bg-color);
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        h2 {
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar for File Management -->
+        <div class="sidebar">
+            <h2>Lux AI HTML Editor</h2>
+            <input type="file" id="fileInput" accept=".html,.css,.js,.png,.jpg,.jpeg,.gif" multiple>
+            <button onclick="uploadFiles()">Upload Files</button>
+            <div id="fileList"></div>
+        </div>
+
+        <!-- Editor and Live Preview with Resizable Divider -->
+        <div class="main-content">
+            <div class="editor-container" id="editorContainer">
+                <textarea id="htmlEditor" placeholder="Write your HTML code here..."></textarea>
+                <button onclick="saveAsHTML()">Save as HTML</button>
+            </div>
+            <div class="divider" id="divider"></div>
+            <div class="preview-container" id="previewContainer">
+                <h2>Live Preview</h2>
+                <iframe id="preview"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your Google Apps Script URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvH7nUVlygV7oLRZcbuI4SgnytLxRabbsTWNtkt37MwdUcYQM1CSIIEkkY-hewfnPnzw/exec';
+
+        let files = {};
+        let currentFile = '';
+
+        // Upload files to Google Drive
+        async function uploadFiles() {
+            const fileInput = document.getElementById('fileInput');
+            for (let file of fileInput.files) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const content = e.target.result;
+                    const params = new URLSearchParams();
+                    params.append('fileName', file.name);
+                    params.append('fileContent', content);
+                    params.append('mimeType', file.type || 'text/html');
+
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        body: params
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        loadFileList(); // Refresh file list
+                    } else {
+                        console.error(result.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Update the file list from Google Sheets
+        async function loadFileList() {
+            const response = await fetch(GOOGLE_SCRIPT_URL);
+            const result = await response.json();
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            result.forEach(([timestamp, fileName, fileUrl]) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'file-name';
+                nameSpan.textContent = fileName;
+                nameSpan.onclick = () => loadFile(fileUrl);
+
+                fileItem.appendChild(nameSpan);
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        // Load file content into the editor
+        async function loadFile(fileUrl) {
+            const response = await fetch(fileUrl);
+            const content = await response.text();
+            const editor = document.getElementById('htmlEditor');
+            editor.value = content;
+            updatePreview();
+        }
+
+        // Update the live preview
+        function updatePreview() {
+            const editor = document.getElementById('htmlEditor');
+            const preview = document.getElementById('preview');
+            preview.srcdoc = editor.value;
+        }
+
+        // Save content as an HTML file
+        function saveAsHTML() {
+            const editor = document.getElementById('htmlEditor');
+            const blob = new Blob([editor.value], { type: "text/html" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = currentFile || 'file.html';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        // Event Listeners
+        document.getElementById('htmlEditor').addEventListener('input', updatePreview);
+        window.onload = loadFileList; // Load files on page load
+    </script>
+</body>
+</html>
