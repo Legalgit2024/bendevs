@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Matrix Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .matrix-container {
+            height: 100%;
+            overflow-y: auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(0, 255, 0, 0.2);
+            animation: scan 2s linear infinite;
+        }
+
+        .typing {
+            overflow: hidden;
+            border-right: 2px solid #00ff00;
+            white-space: nowrap;
+            margin: 0;
+            animation: 
+                typing 3.5s steps(40, end),
+                blink-caret .75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #00ff00; }
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            animation: fadeIn 0.5s ease-out;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .critical {
+            color: #ff0000;
+            text-shadow: 0 0 5px #ff0000;
+        }
+
+        .warning {
+            color: #ffff00;
+            text-shadow: 0 0 5px #ffff00;
+        }
+
+        .timestamp {
+            color: #00aa00;
+        }
+
+        .name-header {
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        .metric {
+            display: inline-block;
+            min-width: 150px;
+        }
+
+        #terminal {
+            white-space: pre;
+            animation: scroll 2s linear infinite;
+        }
+
+        .ascii-art {
+            color: #00aa00;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-line"></div>
+    <div class="matrix-container">
+        <div id="terminal">
+            <div class="ascii-art">
+██████╗ ███████╗██████╗ ███████╗ ██████╗ ███╗   ██╗███╗   ██╗███████╗██╗     
+██╔══██╗██╔════╝██╔══██╗██╔════╝██╔═══██╗████╗  ██║████╗  ██║██╔════╝██║     
+██████╔╝█████╗  ██████╔╝███████╗██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██║     
+██╔═══╝ ██╔══╝  ██╔══██╗╚════██║██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██║     
+██║     ███████╗██║  ██║███████║╚██████╔╝██║ ╚████║██║ ╚████║███████╗███████╗</div>
+
+[PERSONNEL_STATUS] Monitor activated...
+[WARNING] Activity detected
+----------------------------------------
+
+<div class="name-header typing">[DEVELOPER_STATUS: KAUSTUBH WANKHEDE]</div>
+► Location: Remote
+► Hours Active: 16.5
+► Current Task: System Architecture
+► Status: <span class="critical">ACTIVE</span>
+► Code Commits Today: 23
+► Reviews Pending: 3
+
+<div class="name-header typing">[DEVELOPER_STATUS: BEN MAK]</div>
+► Location: On-Site
+► Hours Active: 12.2
+► Current Task: Database Migration
+► Status: <span class="warning">BREAK</span>
+► Code Commits Today: 18
+► Reviews Pending: 5
+
+<span class="timestamp">[29-10-2024 19:16:00]</span> Task assignments:
+► System Architecture: IN PROGRESS
+► Database Migration: PENDING REVIEW
+► UI Development: SCHEDULED
+► API Integration: BLOCKED
+
+<span class="timestamp">[29-10-2024 20:10:53]</span> <span class="critical">[HIGH PRIORITY]</span> Server maintenance required
+<span class="timestamp">[29-10-2024 20:17:20]</span> <span class="critical">[URGENT]</span> Database backup needed
+
+[PERSONNEL_METRICS]
+► Team Productivity: 87%
+► Sprint Progress: 65%
+► Blockers: 2
+► Critical Issues: 3
+
+[ACTIVITY_LOG]
+Code Commits: 47
+Pull Requests: 12
+Reviews: 8
+
+<span class="timestamp">[CURRENT_TIME]</span> Personnel tracking active...
+_</div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        
+        function addNewEntry() {
+            const entries = [
+                `[${new Date().toLocaleTimeString()}] KAUSTUBH: New commit pushed`,
+                `[${new Date().toLocaleTimeString()}] BEN: Started code review`,
+                `[${new Date().toLocaleTimeString()}] KAUSTUBH: Pull request updated`,
+                `[${new Date().toLocaleTimeString()}] BEN: Database migration in progress`
+            ];
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = entries[Math.floor(Math.random() * entries.length)];
+            terminal.appendChild(entry);
+            
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        setInterval(addNewEntry, 3000);
+    </script>
+</body>
+</html>
